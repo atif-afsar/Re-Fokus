@@ -10,49 +10,48 @@ const flavors = [
   {
     name: 'Berry Blast',
     desc: 'A burst of mixed berries for a refreshing, tangy kick.',
-    bg: 'from-fuchsia-500 to-pink-400',
-    img: 'https://via.placeholder.com/120x240?text=Berry',
+    bg: 'from-pink-500 to-purple-600',
+    img: '/images/berry.jpg',
   },
   {
     name: 'Citrus Rush',
     desc: 'Zesty citrus blend to energize your day.',
     bg: 'from-yellow-400 to-orange-500',
-    img: 'https://via.placeholder.com/120x240?text=Citrus',
+    img: '/images/orange.jpg',
   },
   {
     name: 'Tropical Vibe',
     desc: 'Exotic tropical fruits for a sweet escape.',
     bg: 'from-green-400 to-teal-400',
-    img: 'https://via.placeholder.com/120x240?text=Tropical',
+    img: '/images/tripical.jpg',
   },
   {
     name: 'Cool Mint',
     desc: 'A crisp, minty flavor for ultimate refreshment.',
-    bg: 'from-cyan-400 to-blue-400',
-    img: 'https://via.placeholder.com/120x240?text=Mint',
+    bg: 'from-cyan-400 to-blue-500',
+    img: '/images/mint.jpg',
   },
   {
     name: 'Classic Coconut',
     desc: 'Smooth coconut water with a hint of vanilla.',
-    bg: 'from-gray-200 to-gray-400',
-    img: 'https://via.placeholder.com/120x240?text=Coconut',
+    bg: 'from-gray-100 to-gray-400',
+    img: '/images/coconut.jpg',
   },
 ];
 
 const FlavorsSection = () => {
   const cardsRef = useRef([]);
   const containerRef = useRef(null);
-  const glowRef = useRef(null);
 
   useEffect(() => {
     gsap.fromTo(
       cardsRef.current,
-      { opacity: 0, y: 60 },
+      { opacity: 0, y: 50 },
       {
         opacity: 1,
         y: 0,
         duration: 0.8,
-        stagger: 0.15,
+        stagger: 0.2,
         ease: 'power3.out',
         scrollTrigger: {
           trigger: containerRef.current,
@@ -60,52 +59,43 @@ const FlavorsSection = () => {
         },
       }
     );
-    // Animate the glowing background
-    if (glowRef.current) {
-      gsap.to(glowRef.current, {
-        scale: 1.1,
-        filter: 'blur(60px)',
-        repeat: -1,
-        yoyo: true,
-        duration: 4,
-        ease: 'sine.inOut',
-      });
-    }
-    return () => {
-      ScrollTrigger.getAll().forEach(trigger => trigger.kill());
-    };
   }, []);
 
   return (
-    <section className="relative w-full py-20 flex flex-col items-center justify-center overflow-x-clip">
-      {/* Glowing blurred background */}
-      <div
-        ref={glowRef}
-        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[90vw] h-[60vw] max-w-5xl bg-gradient-radial from-fuchsia-400 via-blue-400 to-cyan-300 opacity-30 rounded-full blur-3xl z-0 pointer-events-none animate-pulse"
-      />
-      <h2 className="text-3xl md:text-5xl font-extrabold text-center mb-12 text-white drop-shadow-lg font-[Sora,sans-serif]">Our Flavors</h2>
+    <section className="relative w-full py-24 bg-[#0f0f0f] text-white overflow-hidden">
+      {/* Glowing blobs */}
+      <div className="absolute -top-20 -left-20 w-[300px] h-[300px] bg-pink-500 opacity-30 blur-3xl rounded-full animate-pulse"></div>
+      <div className="absolute -bottom-20 -right-10 w-[300px] h-[300px] bg-cyan-400 opacity-30 blur-3xl rounded-full animate-pulse"></div>
+
+      {/* Heading */}
+      <h2 className="text-5xl md:text-7xl font-extrabold text-center mb-20 bg-gradient-to-r from-yellow-400 via-pink-500 to-cyan-400 bg-clip-text text-transparent animate-gradient-move">
+        Our Flavors
+      </h2>
+
+      {/* Flavor cards */}
       <div
         ref={containerRef}
-        className="relative w-full max-w-6xl flex overflow-x-auto md:grid md:grid-cols-3 gap-8 snap-x snap-mandatory px-4 md:px-0 z-10"
-        style={{ WebkitOverflowScrolling: 'touch' }}
+        className="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-10 px-6 z-10"
       >
         {flavors.map((flavor, i) => (
           <div
             key={flavor.name}
-            ref={el => (cardsRef.current[i] = el)}
-            className={`snap-center shrink-0 md:shrink bg-gradient-to-br ${flavor.bg} rounded-3xl p-6 flex flex-col items-center justify-between min-w-[260px] max-w-xs h-[420px] shadow-xl transition-transform duration-300 hover:scale-105 hover:shadow-2xl hover:-rotate-x-6 cursor-pointer group`}
-            style={{ perspective: 1000 }}
+            ref={(el) => (cardsRef.current[i] = el)}
+            className={`bg-gradient-to-br ${flavor.bg} p-6 rounded-3xl shadow-2xl transform transition duration-300 hover:scale-105 hover:-rotate-2 backdrop-blur-md bg-opacity-80`}
           >
-            <div className="flex-1 flex items-center justify-center">
+            <div className="flex flex-col items-center text-center">
               <img
                 src={flavor.img}
                 alt={flavor.name}
-                className="w-24 h-48 object-contain drop-shadow-xl transition-transform duration-300 group-hover:-rotate-3"
-                draggable="false"
+                className="w-28 h-48 object-contain mb-4 drop-shadow-xl transition duration-300 hover:scale-110"
               />
+              <h3 className="text-xl font-bold font-[Sora,sans-serif] drop-shadow-lg">
+                {flavor.name}
+              </h3>
+              <p className="mt-2 text-sm font-[Poppins,sans-serif] text-white/90">
+                {flavor.desc}
+              </p>
             </div>
-            <h3 className="mt-6 text-xl font-bold text-white font-[Sora,sans-serif] drop-shadow-sm text-center">{flavor.name}</h3>
-            <p className="mt-2 text-white/90 text-center font-[Poppins,sans-serif]">{flavor.desc}</p>
           </div>
         ))}
       </div>
@@ -113,4 +103,4 @@ const FlavorsSection = () => {
   );
 };
 
-export default FlavorsSection; 
+export default FlavorsSection;

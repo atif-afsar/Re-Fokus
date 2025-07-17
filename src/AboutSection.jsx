@@ -3,6 +3,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import SplitType from 'split-type';
 
+
 if (typeof window !== 'undefined' && gsap && !gsap.core.globals().ScrollTrigger) {
   gsap.registerPlugin(ScrollTrigger);
 }
@@ -182,50 +183,52 @@ const AboutSection = () => {
 
   return (
     <div ref={sectionRef} className="relative min-h-screen w-full flex flex-col md:flex-row items-center justify-center px-6 md:px-16 py-16 gap-10 md:gap-20 overflow-hidden bg-gradient-to-br from-blue-900 via-blue-800 to-cyan-900">
-      {/* Animated blurred radial gradient background */}
-      <div
-        ref={bgGlowRef}
-        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vw] md:w-[40vw] md:h-[40vw] bg-gradient-radial from-fuchsia-400 via-blue-400 to-yellow-300 opacity-30 rounded-full blur-3xl z-0 pointer-events-none animate-pulse"
-      />
-      {/* Left: Text */}
-      <div className="flex-1 flex flex-col justify-center items-start max-w-xl z-10">
-        <h2
-          ref={headingRef}
-          className="font-[Sora,sans-serif] text-3xl md:text-5xl font-extrabold mb-8 bg-gradient-to-r from-white via-gray-200 to-white bg-[length:200%_100%] bg-clip-text text-transparent tracking-tight drop-shadow-2xl animate-gradient-move"
-          style={{
-            backgroundImage:
-              'linear-gradient(90deg, #fff, #e5e7eb, #fff, #f3f4f6)',
-            backgroundSize: '200% 100%',
-            backgroundPosition: '0% center',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-          }}
-        >
-          WHO IS FOKUS?
-        </h2>
-        <p
-          ref={paraRef}
-          className="font-[Poppins,sans-serif] text-lg md:text-xl leading-relaxed font-semibold text-white/90 drop-shadow-md"
-        >
-          {aboutText.join(' ')}
-        </p>
-      </div>
-      {/* Right: Images */}
-      <div className="flex-1 flex flex-col items-center justify-center w-full max-w-md z-10 gap-6">
-        <div className="flex flex-row flex-wrap gap-4 justify-center items-center w-full mt-2">
-          {imageData.map((img, i) => (
-            <div key={i} className="relative group">
-              <img
-                ref={el => (imageRefs.current[i] = el)}
-                src={img.src}
-                alt={img.alt}
-                className="w-40 h-40 md:w-56 md:h-56 rounded-lg object-cover border-2 border-gray-200 shadow-md transition-transform duration-200 group-hover:scale-110 group-hover:border-blue-400 cursor-pointer"
-                style={{ willChange: 'transform, opacity' }}
-              />
-              {/* Optional: Shine overlay for fallback */}
-              <span className="pointer-events-none absolute inset-0 rounded-lg" />
-            </div>
-          ))}
+      <div className="w-full max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-center gap-10 md:gap-20">
+        {/* Animated blurred radial gradient background */}
+        <div
+          ref={bgGlowRef}
+          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vw] md:w-[40vw] md:h-[40vw] bg-gradient-radial from-fuchsia-400 via-blue-400 to-yellow-300 opacity-30 rounded-full blur-3xl z-0 pointer-events-none animate-pulse"
+        />
+        {/* Left: Text */}
+        <div className="flex-1 flex flex-col justify-center items-start max-w-xl z-10">
+          <h2
+            ref={headingRef}
+            className="font-[Sora,sans-serif] text-3xl md:text-5xl font-extrabold mb-8 bg-gradient-to-r from-white via-gray-200 to-white bg-[length:200%_100%] bg-clip-text text-transparent tracking-tight drop-shadow-2xl animate-gradient-move"
+            style={{
+              backgroundImage:
+                'linear-gradient(90deg, #fff, #e5e7eb, #fff, #f3f4f6)',
+              backgroundSize: '200% 100%',
+              backgroundPosition: '0% center',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+            }}
+          >
+            WHO IS FOKUS?
+          </h2>
+          <p
+            ref={paraRef}
+            className="font-[Poppins,sans-serif] text-lg md:text-xl leading-relaxed font-semibold text-white/90 drop-shadow-md"
+          >
+            {aboutText.join(' ')}
+          </p>
+        </div>
+        {/* Right: Images */}
+        <div className="flex-1 flex flex-col items-center justify-center w-full max-w-md z-10 gap-6">
+          <div className="flex flex-row flex-wrap gap-4 justify-center items-center w-full mt-2">
+            {imageData.map((img, i) => (
+              <div key={i} className="relative group">
+                <img
+                  ref={el => (imageRefs.current[i] = el)}
+                  src={img.src}
+                  alt={img.alt}
+                  className="w-40 h-40 md:w-56 md:h-56 rounded-lg object-cover border-2 border-gray-200 shadow-md transition-transform duration-200 group-hover:scale-110 group-hover:border-blue-400 cursor-pointer"
+                  style={{ willChange: 'transform, opacity' }}
+                />
+                {/* Optional: Shine overlay for fallback */}
+                <span className="pointer-events-none absolute inset-0 rounded-lg" />
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>

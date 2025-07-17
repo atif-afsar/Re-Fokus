@@ -1,1 +1,35 @@
+@import url('https://api.fontshare.com/v2/css?f[]=clash-display@700,600,500,400&display=swap');
 @import "tailwindcss";
+
+/* Hide scrollbars utility */
+.hide-scrollbar {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE 10+ */
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome/Safari/Webkit */
+}
+
+/* Hide all scrollbars globally */
+html, body, * {
+  scrollbar-width: none !important; /* Firefox */
+  -ms-overflow-style: none !important; /* IE 10+ */
+}
+html::-webkit-scrollbar, body::-webkit-scrollbar, *::-webkit-scrollbar {
+  display: none !important;
+}
+
+@keyframes gradient-move {
+  0%, 100% {
+    background-position: 0% center;
+  }
+  50% {
+    background-position: 100% center;
+  }
+}
+
+.animate-gradient-move {
+  background-size: 200% 100%;
+  animation: gradient-move 8s ease infinite;
+}
+
