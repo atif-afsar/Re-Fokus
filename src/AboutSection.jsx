@@ -1,238 +1,482 @@
-import React, { useRef, useEffect } from 'react';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import SplitType from 'split-type';
+import React, { useRef, useEffect, useLayoutEffect } from 'react';
+import { gsap } from 'gsap';
 
-
-if (typeof window !== 'undefined' && gsap && !gsap.core.globals().ScrollTrigger) {
-  gsap.registerPlugin(ScrollTrigger);
-}
-
-const aboutText = [
-  'Fokus is a stylish hydration brand co-founded by YouTubers Abhishek Malhan (Fukra Insaan) and Nischay Malhan (Triggered Insaan).',
-  'Crafted with coconut water, added vitamins like D3, ginkgo biloba, and zero sugar —',
-  'Fokus Fuel your day the #GetFokus lifestyle.'
+const baseFloatingImages = [
+  'https://fokus.shop/cdn/shop/files/Frame_1.png?v=1736231978',
+  'https://fokus.shop/cdn/shop/files/Frame_3_1.png?v=1736231978',
+  'https://fokus.shop/cdn/shop/files/Frame_2_2.png?v=1737091469',
 ];
+
+const floatingImages = Array.from({ length: 8 }, (_, i) => ({
+  src: baseFloatingImages[i % 3],
+  style: { width: `${90 + Math.random() * 60}px` },
+}));
 
 const imageData = [
   {
     src: 'https://fokus.shop/cdn/shop/files/N02.jpg?v=1736341080&width=832',
     alt: 'Fokus Product 1',
-    direction: 'left',
-    rotate: -8,
-  },
-  {
-    src: 'https://fokus.shop/cdn/shop/files/4_9fd7d940-dccc-405c-9514-33e23831ce6e.jpg?v=1736324277&width=832',
-    alt: 'Fokus Product 2',
-    direction: 'bottom',
-    rotate: 8,
   },
   {
     src: 'https://fokus.shop/cdn/shop/files/5.jpg?v=1736324313&width=832',
-    alt: 'Fokus Product 3',
-    direction: 'right',
-    rotate: -8,
+    alt: 'Fokus Product 2',
   },
 ];
 
 const AboutSection = () => {
   const sectionRef = useRef(null);
+  const floatingRefs = useRef([]);
+  const leftImageRef = useRef(null);
+  const rightImageRef = useRef(null);
   const headingRef = useRef(null);
   const paraRef = useRef(null);
-  const imageRefs = useRef([]);
-  const bgGlowRef = useRef(null);
 
+  // GSAP floating images: animate to random positions within section (responsive to resize)
   useEffect(() => {
-    let splitHeading, splitPara;
-    // Section fade-in with blur and y
-    gsap.fromTo(
-      sectionRef.current,
-      { opacity: 0, filter: 'blur(10px)', y: 50 },
-      {
-        opacity: 1,
-        filter: 'blur(0px)',
-        y: 0,
-        duration: 1,
-        ease: 'power2.out',
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: 'top 80%',
-        },
-      }
-    );
-    // Split heading into letters and animate
-    splitHeading = new SplitType(headingRef.current, { types: 'chars' });
-    // Apply gradient and bg-clip-text to heading chars
-    splitHeading.chars.forEach(char => {
-      char.style.backgroundImage = 'linear-gradient(90deg, #fff, #e5e7eb, #fff, #f3f4f6)';
-      char.style.backgroundSize = '200% 100%';
-      char.style.backgroundPosition = '0% center';
-      char.style.WebkitBackgroundClip = 'text';
-      char.style.backgroundClip = 'text';
-      char.style.WebkitTextFillColor = 'transparent';
-      char.style.color = 'transparent';
-      char.style.display = 'inline-block';
-    });
-    gsap.fromTo(
-      headingRef.current.querySelectorAll('.char'),
-      { opacity: 0, y: -40 },
-      {
-        opacity: 1,
-        y: 0,
-        duration: 0.7,
-        stagger: 0.03,
-        ease: 'power3.out',
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: 'top 85%',
-        },
-      }
-    );
-    // Split paragraph into words and animate
-    splitPara = new SplitType(paraRef.current, { types: 'words' });
-    gsap.fromTo(
-      paraRef.current.querySelectorAll('.word'),
-      { opacity: 0, y: 20 },
-      {
-        opacity: 1,
-        y: 0,
-        duration: 0.6,
-        stagger: 0.06,
-        ease: 'power2.out',
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: 'top 85%',
-        },
-      }
-    );
-    // Animate images: slide in from different directions, rotate, stagger
-    imageRefs.current.forEach((img, i) => {
+    if (!sectionRef.current) return;
+    const section = sectionRef.current;
+    let bounds = section.getBoundingClientRect();
+
+    // Update bounds on resize
+    const updateBounds = () => {
+      bounds = section.getBoundingClientRect();
+    };
+    window.addEventListener('resize', updateBounds);
+
+    floatingRefs.current.forEach((img, i) => {
       if (!img) return;
-      let from = { opacity: 0, scale: 0.85, rotate: imageData[i].rotate };
-      if (imageData[i].direction === 'left') from.x = -60;
-      if (imageData[i].direction === 'right') from.x = 60;
-      if (imageData[i].direction === 'bottom') from.y = 60;
+      // Only the first image will be controlled by the cursor
+      if (i === 0) return;
+      const animateFloat = () => {
+        const maxX = Math.max(0, bounds.width - img.offsetWidth);
+        const maxY = Math.max(0, bounds.height - img.offsetHeight);
+        const x = Math.random() * maxX;
+        const y = Math.random() * maxY;
+        gsap.to(img, {
+          x,
+          y,
+          duration: 4 + Math.random() * 2,
+          ease: 'sine.inOut',
+          onComplete: animateFloat,
+        });
+      };
+      // Start at a random position
+      gsap.set(img, {
+        x: Math.random() * Math.max(0, bounds.width - img.offsetWidth),
+        y: Math.random() * Math.max(0, bounds.height - img.offsetHeight),
+        opacity: 0.85,
+        filter: 'drop-shadow(0 0 24px #23272f) drop-shadow(0 0 8px #1e293b)',
+      });
+      animateFloat();
+    });
+    return () => {
+      window.removeEventListener('resize', updateBounds);
+    };
+  }, []);
+
+  // Magnetic follow effect for only the first floating image
+  useEffect(() => {
+    if (!sectionRef.current || !floatingRefs.current[0]) return;
+    const section = sectionRef.current;
+    const img = floatingRefs.current[0];
+    let following = false;
+
+    const moveImageToCursor = (e) => {
+      following = true;
+      const bounds = section.getBoundingClientRect();
+      const mouseX = e.clientX - bounds.left;
+      const mouseY = e.clientY - bounds.top;
+      gsap.to(img, {
+        x: mouseX,
+        y: mouseY,
+        duration: 0.12,
+        ease: 'power1.out',
+      });
+    };
+
+    const handleMouseLeave = () => {
+      following = false;
+      const bounds = section.getBoundingClientRect();
+      const animateFloat = () => {
+        if (following) return;
+        const maxX = Math.max(0, bounds.width - img.offsetWidth);
+        const maxY = Math.max(0, bounds.height - img.offsetHeight);
+        const x = Math.random() * maxX;
+        const y = Math.random() * maxY;
+        gsap.to(img, {
+          x,
+          y,
+          duration: 8 + Math.random() * 6,
+          ease: 'sine.inOut',
+          onComplete: animateFloat,
+        });
+      };
+      animateFloat();
+    };
+
+    section.addEventListener('mousemove', moveImageToCursor);
+    section.addEventListener('mouseleave', handleMouseLeave);
+
+    return () => {
+      section.removeEventListener('mousemove', moveImageToCursor);
+      section.removeEventListener('mouseleave', handleMouseLeave);
+    };
+  }, []);
+
+  // 2D rotation animation for the two main images (flat spin, slow)
+  useEffect(() => {
+    if (!leftImageRef.current || !rightImageRef.current) return;
+    const leftImg = leftImageRef.current;
+    const rightImg = rightImageRef.current;
+    let leftTween, rightTween;
+
+    const startRotation = () => {
+      leftTween = gsap.to(leftImg, {
+        rotate: 360,
+        duration: 18,
+        repeat: -1,
+        ease: 'linear',
+        modifiers: {
+          rotate: v => `${parseFloat(v) % 360}deg`,
+        },
+      });
+      rightTween = gsap.to(rightImg, {
+        rotate: -360,
+        duration: 18,
+        repeat: -1,
+        ease: 'linear',
+        modifiers: {
+          rotate: v => `${parseFloat(v) % 360}deg`,
+        },
+      });
+    };
+    startRotation();
+
+    const pauseLeft = () => leftTween && leftTween.pause();
+    const resumeLeft = () => leftTween && leftTween.resume();
+    const pauseRight = () => rightTween && rightTween.pause();
+    const resumeRight = () => rightTween && rightTween.resume();
+
+    leftImg.addEventListener('mouseenter', pauseLeft);
+    leftImg.addEventListener('mouseleave', resumeLeft);
+    rightImg.addEventListener('mouseenter', pauseRight);
+    rightImg.addEventListener('mouseleave', resumeRight);
+
+    return () => {
+      leftImg.removeEventListener('mouseenter', pauseLeft);
+      leftImg.removeEventListener('mouseleave', resumeLeft);
+      rightImg.removeEventListener('mouseenter', pauseRight);
+      rightImg.removeEventListener('mouseleave', resumeRight);
+      leftTween && leftTween.kill();
+      rightTween && rightTween.kill();
+    };
+  }, []);
+
+  // Animate heading and paragraph on mount and loop
+  useEffect(() => {
+    if (headingRef.current) {
       gsap.fromTo(
-        img,
-        from,
+        headingRef.current,
+        { opacity: 0, scale: 0.8, y: 40 },
         {
           opacity: 1,
-          x: 0,
-          y: 0,
           scale: 1,
-          rotate: 0,
-          duration: 1,
-          delay: 0.2 + i * 0.15,
-          ease: 'back.out(1.7)',
-          scrollTrigger: {
-            trigger: sectionRef.current,
-            start: 'top 85%',
-          },
+          y: 0,
+          duration: 1.2,
+          ease: 'expo.out',
+        }
+      );
+      // Shimmer/gradient animation on heading
+      gsap.to(headingRef.current, {
+        backgroundPosition: '200% center',
+        duration: 3.5,
+        repeat: -1,
+        yoyo: true,
+        ease: 'power1.inOut',
+      });
+    }
+    if (paraRef.current) {
+      gsap.fromTo(
+        paraRef.current,
+        { opacity: 0, y: 40 },
+        { opacity: 1, y: 0, duration: 1.1, delay: 0.3, ease: 'power3.out' }
+      );
+      // No color animation, keep static color
+    }
+  }, []);
+
+  // Cool hover effect for heading and paragraph
+  const handleTextMouseEnter = (ref, type) => {
+    if (!ref.current) return;
+    if (type === 'heading') {
+      gsap.to(ref.current, {
+        scale: 1.13,
+        filter: 'drop-shadow(0 4px 32px #23272f) brightness(1.1)',
+        backgroundPosition: '400% center',
+        duration: 0.35,
+        ease: 'expo.out',
+      });
+      // Add shake animation
+      gsap.fromTo(ref.current, { x: -6 }, { x: 6, duration: 0.08, yoyo: true, repeat: 7, ease: 'power1.inOut', onComplete: () => {
+        gsap.to(ref.current, { x: 0, duration: 0.1, ease: 'expo.out' });
+      }});
+    } else {
+      gsap.to(ref.current, {
+        scale: 1.08,
+        filter: 'drop-shadow(0 2px 16px #23272f)',
+        color: '#23272f',
+        duration: 0.32,
+        ease: 'expo.out',
+      });
+    }
+  };
+
+  const handleTextMouseLeave = (ref, type) => {
+    if (!ref.current) return;
+    if (type === 'heading') {
+      gsap.to(ref.current, {
+        scale: 1,
+        filter: 'none',
+        backgroundPosition: '200% center',
+        duration: 0.4,
+        x: 0, // reset shake
+        ease: 'expo.out',
+      });
+    } else {
+      gsap.to(ref.current, {
+        scale: 1,
+        filter: 'none',
+        color: '#e0e7ef',
+        duration: 0.38,
+        ease: 'expo.out',
+      });
+    }
+  };
+
+  // Clickable animation for heading and paragraph
+  const handleTextClick = ref => {
+    if (ref.current) {
+      gsap.fromTo(
+        ref.current,
+        { scale: 1, color: '#23272f' },
+        {
+          scale: 1.12,
+          color: '#18181b',
+          duration: 0.18,
+          yoyo: true,
+          repeat: 1,
+          ease: 'power2.out',
           onComplete: () => {
-            // Floating animation (yoyo)
-            gsap.to(img, {
-              y: '+=12',
-              duration: 2.5 + i,
-              repeat: -1,
-              yoyo: true,
-              ease: 'sine.inOut',
-            });
+            gsap.to(ref.current, { scale: 1, color: '#23272f', duration: 0.18 });
           },
         }
       );
-      // Shine effect on hover
-      img.addEventListener('mouseenter', () => {
-        gsap.fromTo(
-          img,
-          { WebkitMaskImage: 'linear-gradient(120deg, transparent 40%, white 50%, transparent 60%)', WebkitMaskSize: '200% 100%', WebkitMaskPosition: '150% 0%' },
-          {
-            WebkitMaskPosition: '-50% 0%',
-            duration: 0.7,
-            ease: 'power2.inOut',
-            onComplete: () => {
-              img.style.WebkitMaskImage = '';
-              img.style.WebkitMaskPosition = '';
-              img.style.WebkitMaskSize = '';
-            },
-          }
-        );
-      });
-    });
-    // Animate the blurred radial background
-    if (bgGlowRef.current) {
-      gsap.to(bgGlowRef.current, {
-        scale: 1.1,
-        filter: 'blur(60px)',
-        repeat: -1,
-        yoyo: true,
-        duration: 4,
-        ease: 'sine.inOut',
-      });
     }
-    // Cleanup
+  };
+
+  // Particle effect state
+  const canvasRef = useRef(null);
+  useLayoutEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas || !sectionRef.current) return;
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+    let animationId;
+    let bounds = sectionRef.current.getBoundingClientRect();
+
+    // Resize canvas to section
+    const resizeCanvas = () => {
+      bounds = sectionRef.current.getBoundingClientRect();
+      canvas.width = bounds.width;
+      canvas.height = bounds.height;
+      canvas.style.width = bounds.width + 'px';
+      canvas.style.height = bounds.height + 'px';
+    };
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    // Particle class
+    function Particle(x, y) {
+      this.x = x;
+      this.y = y;
+      this.radius = 3 + Math.random() * 2;
+      this.color = '#00fff7';
+      this.alpha = 1;
+      this.vx = (Math.random() - 0.5) * 1.5;
+      this.vy = (Math.random() - 0.5) * 1.5;
+    }
+    Particle.prototype.update = function () {
+      this.x += this.vx;
+      this.y += this.vy;
+      this.alpha -= 0.018;
+    };
+    Particle.prototype.draw = function (ctx) {
+      ctx.save();
+      ctx.globalAlpha = this.alpha;
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI);
+      ctx.fillStyle = this.color;
+      ctx.shadowColor = this.color;
+      ctx.shadowBlur = 8;
+      ctx.fill();
+      ctx.restore();
+    };
+
+    // Animation loop
+    function animate() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles = particles.filter(p => p.alpha > 0.05);
+      for (let p of particles) {
+        p.update();
+        p.draw(ctx);
+      }
+      animationId = requestAnimationFrame(animate);
+    }
+    animate();
+
+    // Mouse move handler
+    const handleMouseMove = (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      for (let i = 0; i < 3; i++) {
+        particles.push(new Particle(x, y));
+      }
+    };
+    sectionRef.current.addEventListener('mousemove', handleMouseMove);
+
     return () => {
-      ScrollTrigger.getAll().forEach(trigger => trigger.kill());
-      splitHeading && splitHeading.revert();
-      splitPara && splitPara.revert();
-      imageRefs.current.forEach(img => {
-        if (!img) return;
-        img.onmouseenter = null;
-      });
+      window.removeEventListener('resize', resizeCanvas);
+      sectionRef.current.removeEventListener('mousemove', handleMouseMove);
+      cancelAnimationFrame(animationId);
     };
   }, []);
 
   return (
-    <div ref={sectionRef} className="relative min-h-screen w-full flex flex-col md:flex-row items-center justify-center px-6 md:px-16 py-16 gap-10 md:gap-20 overflow-hidden bg-gradient-to-br from-blue-900 via-blue-800 to-cyan-900">
-      <div className="w-full max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-center gap-10 md:gap-20">
-        {/* Animated blurred radial gradient background */}
-        <div
-          ref={bgGlowRef}
-          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vw] md:w-[40vw] md:h-[40vw] bg-gradient-radial from-fuchsia-400 via-blue-400 to-yellow-300 opacity-30 rounded-full blur-3xl z-0 pointer-events-none animate-pulse"
+    <section
+      ref={sectionRef}
+      style={{
+        position: 'relative',
+        width: '100%',
+        minHeight: '100vh',
+        background: '#03162A',
+        overflow: 'hidden',
+        padding: 0,
+        margin: 0,
+      }}
+    >
+      {/* Particle canvas background */}
+      <canvas
+        ref={canvasRef}
+        style={{
+          position: 'absolute',
+          inset: 0,
+          width: '100%',
+          height: '100%',
+          zIndex: 0,
+          pointerEvents: 'none',
+          display: 'block',
+        }}
+      />
+      {/* Multiple Floating Images (only the first follows the cursor) */}
+      {floatingImages.map((img, i) => (
+        <img
+          key={i}
+          ref={el => (floatingRefs.current[i] = el)}
+          src={img.src}
+          alt="floating decoration"
+          style={{
+            position: 'absolute',
+            width: 50,
+            height: 50,
+            maxWidth: 50,
+            maxHeight: 50,
+            pointerEvents: 'none',
+            zIndex: 2,
+            borderRadius: 18,
+            boxShadow: '0 2px 16px #38bdf8',
+            border: '2px solid #38bdf8',
+            objectFit: 'cover',
+            transition: 'box-shadow 0.3s',
+          }}
         />
-        {/* Left: Text */}
-        <div className="flex-1 flex flex-col justify-center items-start max-w-xl z-10">
+      ))}
+
+      {/* Main Content: left image, center text, right image */}
+      <div style={{
+        position: 'relative',
+        zIndex: 2,
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '100vh',
+        gap: 48,
+        width: '100%',
+        maxWidth: 1400,
+        margin: '0 auto',
+      }}>
+        {/* Left Image */}
+        <img
+          ref={leftImageRef}
+          src={imageData[0].src}
+          alt={imageData[0].alt}
+          style={{ width: 260, height: 260, borderRadius: '1.5rem', objectFit: 'cover', boxShadow: '0 8px 32px #38bdf855', border: '3px solid #38bdf8', background: '#0a2540', transition: 'transform 0.4s' }}
+        />
+        {/* Center Text */}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minWidth: 0 }}>
           <h2
             ref={headingRef}
-            className="font-[Sora,sans-serif] text-3xl md:text-5xl font-extrabold mb-8 bg-gradient-to-r from-white via-gray-200 to-white bg-[length:200%_100%] bg-clip-text text-transparent tracking-tight drop-shadow-2xl animate-gradient-move"
+            onClick={() => handleTextClick(headingRef)}
+            onMouseEnter={() => handleTextMouseEnter(headingRef, 'heading')}
+            onMouseLeave={() => handleTextMouseLeave(headingRef, 'heading')}
             style={{
-              backgroundImage:
-                'linear-gradient(90deg, #fff, #e5e7eb, #fff, #f3f4f6)',
-              backgroundSize: '200% 100%',
-              backgroundPosition: '0% center',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
+              color: '#fff',
+              fontWeight: 900,
+              fontSize: '3.5rem',
+              marginBottom: '2rem',
+              letterSpacing: '-0.02em',
+              textAlign: 'center',
+              cursor: 'pointer',
+              userSelect: 'none',
+              lineHeight: 1.1,
             }}
           >
-            WHO IS FOKUS?
+            WHO IS <span style={{ color: '#38bdf8' }}>FOKUS</span>?
           </h2>
           <p
             ref={paraRef}
-            className="font-[Poppins,sans-serif] text-lg md:text-xl leading-relaxed font-semibold text-white/90 drop-shadow-md"
+            onClick={() => handleTextClick(paraRef)}
+            onMouseEnter={() => handleTextMouseEnter(paraRef, 'para')}
+            onMouseLeave={() => handleTextMouseLeave(paraRef, 'para')}
+            style={{
+              color: '#fff',
+              fontSize: '1.7rem',
+              maxWidth: 700,
+              textAlign: 'center',
+              marginBottom: '2.5rem',
+              cursor: 'pointer',
+              userSelect: 'none',
+              fontWeight: 500,
+              lineHeight: 1.5,
+              letterSpacing: '-0.01em',
+              transition: 'color 0.5s',
+            }}
           >
-            {aboutText.join(' ')}
+            Fokus is a stylish hydration brand co-founded by YouTubers <span style={{ color: '#38bdf8', fontWeight: 700 }}>Abhishek Malhan</span> and <span style={{ color: '#38bdf8', fontWeight: 700 }}>Nischay Malhan</span>.<br />
+            Crafted with coconut water, vitamins, and zero sugar for the <span style={{ color: '#38bdf8', fontWeight: 700 }}>#GetFokus</span> lifestyle.
           </p>
         </div>
-        {/* Right: Images */}
-        <div className="flex-1 flex flex-col items-center justify-center w-full max-w-md z-10 gap-6">
-          <div className="flex flex-row flex-wrap gap-4 justify-center items-center w-full mt-2">
-            {imageData.map((img, i) => (
-              <div key={i} className="relative group">
-                <img
-                  ref={el => (imageRefs.current[i] = el)}
-                  src={img.src}
-                  alt={img.alt}
-                  className="w-40 h-40 md:w-56 md:h-56 rounded-lg object-cover border-2 border-gray-200 shadow-md transition-transform duration-200 group-hover:scale-110 group-hover:border-blue-400 cursor-pointer"
-                  style={{ willChange: 'transform, opacity' }}
-                />
-                {/* Optional: Shine overlay for fallback */}
-                <span className="pointer-events-none absolute inset-0 rounded-lg" />
-              </div>
-            ))}
-          </div>
-        </div>
+        {/* Right Image */}
+        <img
+          ref={rightImageRef}
+          src={imageData[1].src}
+          alt={imageData[1].alt}
+          style={{ width: 260, height: 260, borderRadius: '1.5rem', objectFit: 'cover', boxShadow: '0 8px 32px #38bdf855', border: '3px solid #38bdf8', background: '#0a2540', transition: 'transform 0.4s' }}
+        />
       </div>
-    </div>
+    </section>
   );
 };
 
-export default AboutSection; 
+export default AboutSection;
